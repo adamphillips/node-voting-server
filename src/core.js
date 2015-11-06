@@ -15,8 +15,13 @@ export function next(state) {
                 .remove('entries')
                 .set('winner', entries.first());
   } else {
+    const round = state.getIn(['vote', 'round'], 0);
+
     return state.merge({
-      vote: Map({pair: entries.take(2)}),
+      vote: Map({
+        round: round + 1,
+        pair: entries.take(2)
+      }),
       entries: entries.skip(2)
     });
   }
