@@ -27,16 +27,31 @@ export function next(state) {
   }
 }
 
-export function vote(state, entry) {
-  if (state.get('pair').includes(entry)) {
-    return state.updateIn(
-      ['tally', entry],
-      0,
-      tally => tally + 1
-    );
+function removePreviousVote(voteState, voter) {
+  const previousVote = voteState.getIn(['votes', voter]);
+  if (previousVote) {
+    return voteState.updateIn(['tally', previousVote], t => t - 1)
+                    .removeIn(['votes', voter]);
   } else {
-    return state;
+    return voteState;
   }
+}
+
+function addVote(voteState, entry, voter) {
+  if (voteState.get('pair').includes(entry)) {
+    return voteState.updateIn(['tally', entry], 0, tally => tally + 1)
+                .setIn(['votes', voter], entry);
+  } else {
+    return voteState;
+  }
+}
+
+export function vote(voteState, entry, voter) {
+  return addVote(
+    removePreviousVote(voteState, voter),
+    entry,
+    voter
+  );
 }
 
 function getWinners(vote) {
